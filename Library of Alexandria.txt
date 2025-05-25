@@ -1,0 +1,211 @@
+Below is a detailed outline from a collaborator on how we are to use this project directory, kindly review it, let me know if its clear and work on it: 
+---
+
+# Revised Full Project Outline for FRIS Webapp + Dolibarr Integration (React-Vite + Python FastAPI + PostgreSQL)
+
+---
+
+## Phase 1: Project Setup & Environment
+
+### 1. Initialize Repository & Folder Structure
+
+```
+fris-webapp/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── api/
+│   │   ├── models.py
+│   │   ├── schemas.py
+│   │   ├── services/
+│   │   │   └── dolibarr_client.py
+│   │   ├── config.py
+│   │   ├── dependencies.py
+│   │   ├── auth.py
+│   │   └── utils.py
+│   ├── setup_db.py
+│   ├── requirements.txt
+│   └── alembic/  # database migrations
+├── frontend/
+│   └── (React-Vite project for UI)
+├── .env
+└── README.md
+```
+
+---
+
+### 2. Backend Environment Setup
+
+* Use Python virtual environment
+* Install dependencies:
+
+```bash
+pip install fastapi uvicorn sqlalchemy psycopg2-binary alembic pydantic httpx python-dotenv passlib[bcrypt] python-jose
+```
+
+* Initialize Alembic for migrations
+* Configure `.env` with:
+
+```dotenv
+DATABASE_URL=postgresql+psycopg2://postgres:$Qlbench3r20@localhost:5432/frisdb
+DOLIBARR_API_URL=https://wantwofrisky.with5.dolicloud.com/api/index.php
+DOLIBARR_API_KEY=CZefWiUPr47K38s0cw6BD0L0xwqrJG19
+SECRET_KEY=bXxdsZkrcRg5Xj948ea11g6KlPrkmFCr7DWli3_68uE
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+
+---
+
+## Phase 2: Database Modeling & Setup (Based on ERD)
+
+Create SQLAlchemy models reflecting the ERD entities with full attributes:
+
+### 3. Core Entities
+
+| Table                  | Key Fields & Description                                                                                                                                                                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **User**               | `userId (PK)`, `userName`, `userEmail`, `password` (hashed), `rank`, `college`, `department`, `role`, `researchExpDetails`, `isDepartmentHead`, `isDean`, `googleScholarLink`                                                                                                                                                  |
+| **Degree**             | `degreeId (PK)`, `userId (FK)`, `school`, `year`, `degreeType`                                                                                                                                                                                                                                                                 |
+| **ResearchInterest**   | `rllId (PK)`, `userId (FK)`, `resInt` (text)                                                                                                                                                                                                                                                                                   |
+| **Affiliations**       | `affId (PK)`, `userId (FK)`, `affInt` (text)                                                                                                                                                                                                                                                                                   |
+| **ResearchExperience** | `rElId (PK)`, `userId (FK)`, `resExpLoc`, `startDate`, `endDate`                                                                                                                                                                                                                                                               |
+| **ResearchActivities** | `raId (PK)`, `userId (FK)`, `title`, `institute`, `authors`, `datePublished`, `startDate`, `endDate`, `journal`, `citedAs`, `doi`, `publicationType`, `supportingDocument`, `status`, `currentApprover`, `approvalPath`, `approverStatus`                                                                                      |
+| **CourseAndSET**       | `caSId (PK)`, `userId (FK)`, `academicYear`, `term`, `courseNum`, `section`, `courseDesc`, `courseType`, `percentContri`, `loadCreditUnits`, `noOfRespondents`, `partOneStudent`, `partTwoCourse`, `partThreeTeaching`, `teachingPoints`, `supportingDocuments`, `status`, `currentApprover`, `approvalPath`, `approverStatus` |
+| **Extension**          | `extensionId (PK)`, `userId (FK)`, `position`, `office`, `startDate`, `endDate`, `number`, `extOfService`, `supportingDocument`, `status`, `currentApprover`, `approvalPath`, `approverStatus`                                                                                                                                 |
+| **Authorship**         | `authorId (PK)`, `userId (FK)`, `title`, `authors`, `date`, `upCourse`, `recommendingUnit`, `publisher`, `authorshipType`, `numberOfAuthors`, `supportingDocument`, `status`, `currentApprover`, `approvalPath`, `approverStatus`                                                                                              |
+| **SDG**                | `sdgId (PK)`, `raId (FK)`, `sdgNum`, `sdgDesc` (link to Sustainable Development Goals for Research Activities)                                                                                                                                                                                                                 |
+| **SDGSubset**          | `sdgSId (PK)`, `sdgId (FK)`, `sdgSNum`, `sdgSDesc`                                                                                                                                                                                                                                                                             |
+| **ApprovalPath**       | `approvalPathId (PK)`, `department`, `college`, `approver_email`, `approval_number`, `isDeptHead`, `isDean`                                                                                                                                                                                                                    |
+
+### Notes:
+
+* Supporting Documents fields store paths or URLs (files stored externally)
+* Status fields track approval workflow status per entity submission
+* ApprovalPath and related approval process is tightly integrated with each activity's submission
+
+---
+
+### 4. Database Setup Script (`setup_db.py`)
+
+Use SQLAlchemy's metadata.create\_all or Alembic migrations to create all tables from models.
+
+---
+
+## Phase 3: Dolibarr Integration for User Management
+
+### 5. Use Dolibarr **Third Party** module to manage faculty user profiles
+
+* Sync faculty **User** entities on create/update with Dolibarr Third Party via REST API
+* Store Dolibarr third party ID in User record (extend ERD if needed)
+* Minimal sync scope: only essential profile info (name, email, department)
+* No Google Scholar import or direct Dolibarr publication sync
+
+---
+
+### 6. Implement Dolibarr Client Service (`dolibarr_client.py`)
+
+* Async HTTP calls to Dolibarr REST API for Third Party CRUD
+* Key functions: create\_third\_party, update\_third\_party, get\_third\_party\_by\_id
+* Use API key from `.env` securely
+
+---
+
+## Phase 4: Backend API & Authorization
+
+### 7. Authentication & Authorization (`auth.py`)
+
+* JWT-based auth with roles `faculty`, `admin`
+* Only admins can create/update Dolibarr Third Party info and approve submissions
+* Faculty can view/edit own profile, manage their activities & submissions
+
+### 8. API Endpoints Structure
+
+| Endpoint Group  | Allowed Roles | Functionality                                               |
+| --------------- | ------------- | ----------------------------------------------------------- |
+| `/auth`         | Public        | Login, logout, token refresh                                |
+| `/users`        | Admin         | Manage users, sync with Dolibarr                            |
+| `/profile/me`   | Faculty       | View/edit own profile including degrees, research interests |
+| `/publications` | Faculty       | CRUD for research activities (publications)                 |
+| `/teaching`     | Faculty       | CRUD for teaching activities (CourseAndSET)                 |
+| `/extension`    | Faculty       | CRUD for extension/public service activities                |
+| `/authorship`   | Faculty       | CRUD for authorship records                                 |
+| `/approval`     | Admin         | View and manage approval workflows and paths                |
+| `/sdg`          | Faculty/Admin | Manage Sustainable Development Goals linked to research     |
+
+* Approval workflow endpoints handle status updates per activity
+
+---
+
+## Phase 5: Frontend (React + Vite)
+
+### 9. Build UI Components & Pages
+
+* Authentication pages (login/logout)
+* Dashboard with profile summary and tabs:
+
+  * Biography (Edit educational background, research interests, affiliations, experience)
+  * Research Activities (Add/edit publications with SDG tagging)
+  * Teaching Activities (Course/SET form)
+  * Extension/Public Service (with service categories as per presentation)
+  * Authorships
+  * Approval status overview for submitters and admins
+* Multi-step form validation
+* Upload supporting documents (PDF, DOCX)
+* SDG selector UI referencing SDG and SDG Subset with help tooltip/question mark icon
+
+---
+
+## Phase 6: Approval Workflow Implementation
+
+### 10. Workflow Logic
+
+* Submission creation triggers an approval path based on user’s department & role
+* Current approver updated per stage; status tracked at each step
+* Notifications/emails to approvers (optional feature)
+* Admin interface to view, approve, reject submissions with comments
+
+---
+
+## Phase 7: Testing & Deployment
+
+### 11. Testing
+
+* Unit tests for backend API, model validations, Dolibarr client
+* Integration tests for approval workflows
+* Manual end-to-end tests: user profile creation, publication submission, approval
+
+### 12. Deployment
+
+* Secure backend deployment with env vars
+* HTTPS-enabled frontend deployment (Vite build static served or via Node.js server)
+* Backend accessible to Dolibarr API endpoint
+
+---
+
+# Additional Notes from Presentation and ERD
+
+* **Ignore Google Scholar import feature** — manual input only for publications
+* Publications must include detailed fields including `title`, `authors`, `datePublished`, `journal`, `doi`, `publicationType` (per detailed list), `supportingDocument`, and associated SDGs
+* Extension/Public Service activities must cover multiple categories (Service to UP, Profession, Science Education, Nation), with points/units possibly assigned based on type
+* The approval path must account for department heads and deans as approvers as flagged in `ApprovalPath`
+* Supporting documents are critical and must be properly uploaded and stored outside Dolibarr
+* User entity is the central hub, linking all other tables via foreign keys
+
+---
+
+# Summary Table
+
+| Phase                | Key Deliverables                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| 1. Setup             | Repo, env, dependencies, folder structure, initial config                                   |
+| 2. DB Modeling       | Full ERD implemented as SQLAlchemy models, migrations, setup                                |
+| 3. Dolibarr Client   | Third Party API wrapper for user sync                                                       |
+| 4. Backend API       | Authentication, role-based endpoints, user profile management, submission and approval CRUD |
+| 5. Frontend UI       | React-Vite SPA with dashboard, forms, document upload, SDG tagging                          |
+| 6. Approval Workflow | Submission lifecycle with approval path management                                          |
+| 7. Test & Deploy     | Unit/integration tests, secure deployment, Dolibarr API connectivity                        |
+
+---
+
+Kindly also update the README.md and the .gitignore accordingly 
+DO THIS IN SEGMENT AND DONT OVERWHELM ANY TOOL CALLS 
