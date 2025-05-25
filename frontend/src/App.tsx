@@ -1,7 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+// Import theme
+import theme from './theme';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -19,71 +22,6 @@ import ExtensionActivitiesPage from './pages/ExtensionActivitiesPage';
 import AddExtensionActivityPage from './pages/AddExtensionActivityPage';
 import UsersPage from './pages/UsersPage';
 import PublicationApprovalPage from './pages/PublicationApprovalPage';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
-
-// Create a theme instance
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: FRIS_COLORS.burgundy,
-    },
-    secondary: {
-      main: FRIS_COLORS.green,
-    },
-    error: {
-      main: '#f44336',
-    },
-    warning: {
-      main: FRIS_COLORS.gold,
-    },
-    background: {
-      default: '#f5f5f5',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h4: {
-      fontWeight: 600,
-    },
-    h5: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 600,
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: 'none',
-          fontWeight: 600,
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-        },
-      },
-    },
-  },
-});
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
