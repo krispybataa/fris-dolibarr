@@ -400,19 +400,32 @@ export const authorshipAPI = {
 
 // Approval API
 export const approvalAPI = {
-  approve: async (type: string, id: number) => {
-    const response = await api.post(`/approval/${type}/${id}/approve`);
-    return response.data;
+  updateStatus(type: string, id: number, status: 'approved' | 'rejected', comments?: string) {
+    return api.post(`/approval/${type}/${id}/approve`, { status, comments });
   },
   
-  reject: async (type: string, id: number, comments?: string) => {
-    const response = await api.post(`/approval/${type}/${id}/reject`, { comments });
-    return response.data;
+  approve(type: string, id: number, comments?: string) {
+    return this.updateStatus(type, id, 'approved', comments);
   },
   
-  getPending: async () => {
-    const response = await api.get('/approval/pending');
-    return response.data;
+  reject(type: string, id: number, comments?: string) {
+    return this.updateStatus(type, id, 'rejected', comments);
+  },
+  
+  getPending() {
+    return api.get('/approval/pending');
+  },
+  
+  getMySubmissions() {
+    return api.get('/approval/my-submissions');
+  },
+  
+  getApprovalPaths(department?: string, college?: string) {
+    let queryString = '';
+    if (department) queryString += `?department=${department}`;
+    if (college) queryString += department ? `&college=${college}` : `?college=${college}`;
+    
+    return api.get(`/approval/paths${queryString}`);
   }
 };
 

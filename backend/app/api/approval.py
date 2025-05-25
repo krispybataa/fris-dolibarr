@@ -298,3 +298,132 @@ def get_approver_name(db: Session, approver_id: int) -> str:
         
     approver = db.query(User).filter(User.userId == approver_id).first()
     return approver.userName if approver else None
+
+
+@router.post("/{record_type}/{record_id}/approve", response_model=Dict[str, Any])
+async def update_approval_status(
+    record_type: str,
+    record_id: int,
+    status: str,
+    comments: str = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update the approval status of a record.
+    Status can be 'approved' or 'rejected'.
+    """
+    # Validate status
+    if status not in ['approved', 'rejected']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Status must be 'approved' or 'rejected'"
+        )
+    
+    # Get the appropriate model based on record_type
+    model_map = {
+        'research_activity': ('ResearchActivities', 'raId'),
+        'course': ('CourseAndSET', 'caSId'),
+        'extension': ('Extension', 'extensionId'),
+        'authorship': ('Authorship', 'authorId')
+    }
+    
+    if record_type not in model_map:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid record type: {record_type}"
+        )
+    
+    model_name, id_field = model_map[record_type]
+    
+    # Import the model dynamically
+    from ..models import ResearchActivities, CourseAndSET, Extension, Authorship
+    model_classes = {
+        'ResearchActivities': ResearchActivities,
+        'CourseAndSET': CourseAndSET,
+        'Extension': Extension,
+        'Authorship': Authorship
+    }
+    
+    model = model_classes[model_name]
+    
+    # Get the record
+    record = db.query(model).filter(getattr(model, id_field) == record_id).first()
+    
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{record_type.capitalize()} record not found"
+        )
+    
+    # Check if user is the current approver
+    if record.currentApprover != current_user.userId:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not authorized to approve this record"
+        )
+    
+    # Update approval status
+    if status == "approved":
+        # Check if there's an approval path
+        if record.approvalPath:
+            # Parse the approval path
+            approval_path = record.approvalPath.split(",")
+            approver_status = record.approverStatus.split(",") if record.approverStatus else ["pending"] * len(approval_path)
+            
+            # Find current approver's position
+            try:
+                current_index = approval_path.index(str(current_user.userId))
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Current user not found in approval path"
+                )
+            
+            # Update approver status
+            approver_status[current_index] = "approved"
+            record.approverStatus = ",".join(approver_status)
+            
+            # Check if there are more approvers
+            if current_index < len(approval_path) - 1:
+                # Move to next approver
+                record.currentApprover = int(approval_path[current_index + 1])
+            else:
+                # Final approval
+                record.status = "approved"
+                record.currentApprover = None
+        else:
+            # No approval path defined, just approve
+            record.status = "approved"
+            record.currentApprover = None
+    
+    elif status == "rejected":
+        # Reject the record
+        record.status = "rejected"
+        
+        # Update approver status if path exists
+        if record.approvalPath and record.approverStatus:
+            approval_path = record.approvalPath.split(",")
+            approver_status = record.approverStatus.split(",")
+            
+            try:
+                current_index = approval_path.index(str(current_user.userId))
+                approver_status[current_index] = "rejected"
+                record.approverStatus = ",".join(approver_status)
+            except ValueError:
+                pass  # Ignore if user not found in path
+    
+    # Add comments if provided
+    # Note: You might want to store comments in a separate table for a production system
+    
+    # Save changes
+    db.commit()
+    db.refresh(record)
+    
+    return {
+        "message": f"Record {status} successfully",
+        "record_id": record_id,
+        "record_type": record_type,
+        "status": record.status,
+        "current_approver": get_approver_name(db, record.currentApprover) if record.currentApprover else None
+    }

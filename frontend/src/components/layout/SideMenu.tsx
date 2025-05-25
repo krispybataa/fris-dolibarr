@@ -90,7 +90,7 @@ const SideMenu = ({ open, onClose }: SideMenuProps) => {
             </ListItem>
           )}
           
-          {user?.role === 'admin' || user?.isDepartmentHead || user?.isDean ? (
+          {/* {user?.role === 'admin' || user?.isDepartmentHead || user?.isDean ? (
             <ListItem disablePadding>
               <ListItemButton onClick={() => handleNavigation('/approving-dashboard')}>
                 <ListItemIcon>
@@ -99,7 +99,7 @@ const SideMenu = ({ open, onClose }: SideMenuProps) => {
                 <ListItemText primary="Approving Dashboard" />
               </ListItemButton>
             </ListItem>
-          ) : null}
+          ) : null} */}
           
           {user?.role === 'admin' && (
             <ListItem disablePadding>
