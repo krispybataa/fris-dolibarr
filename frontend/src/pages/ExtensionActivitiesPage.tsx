@@ -23,17 +23,9 @@ import AddIcon from '@mui/icons-material/Add';
 import PublicIcon from '@mui/icons-material/Public';
 import SearchIcon from '@mui/icons-material/Search';
 import WorkIcon from '@mui/icons-material/Work';
-import BusinessIcon from '@mui/icons-material/Business';
-import SchoolIcon from '@mui/icons-material/School';
 // Import APIs for extension activities
 import { extensionAPI } from '../services/api';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../theme';
 
 // Interface for Extension Activity
 interface ExtensionActivity {

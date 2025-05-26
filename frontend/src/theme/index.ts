@@ -24,6 +24,11 @@ export const FRIS_COLORS = {
   error: '#f44336',
   warning: '#ff9800',
   info: '#2196f3',
+  
+  // FRIS branding colors
+  burgundy: '#8b1f41',
+  green: '#006747',
+  gold: '#f2c75c'
 };
 
 // Breakpoints for responsive design

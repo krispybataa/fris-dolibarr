@@ -26,12 +26,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { approvalAPI } from '../services/api';
-import PageHeader from '../components/common/PageHeader';
-import ResponsiveContainer from '../components/common/ResponsiveContainer';
-import { FRIS_COLORS } from '../theme';
+import Layout from '../components/layout/Layout';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { FRIS_COLORS } from '../theme';
 
 // Interfaces for API responses
 interface Approver {
@@ -283,8 +282,30 @@ const PublicationApprovalPage = () => {
   }
 
   return (
-    <ResponsiveContainer>
-      <PageHeader title="Publication Approvals" />
+    <Layout>
+      <Box sx={{ width: '100%', maxWidth: '100%' }}>
+        <Box
+          sx={{
+            background: 'linear-gradient(to bottom, #f5f5f5, #fff)',
+            py: 3,
+            px: { xs: 2, sm: 3 },
+            mb: 3,
+            borderRadius: '4px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+          }}
+        >
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            fontWeight="bold"
+            sx={{ 
+              color: FRIS_COLORS.burgundy,
+              textAlign: 'center'
+            }}
+          >
+            Publication Approvals
+          </Typography>
+        </Box>
 
       {error && (
         <Alert 
@@ -630,7 +651,8 @@ const PublicationApprovalPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </ResponsiveContainer>
+      </Box>
+    </Layout>
   );
 };
 

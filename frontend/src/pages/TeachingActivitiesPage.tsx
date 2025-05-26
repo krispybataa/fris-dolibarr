@@ -24,13 +24,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DescriptionIcon from '@mui/icons-material/Description';
 // Import APIs for teaching activities
 import { teachingAPI, authorshipAPI } from '../services/api';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../theme';
 
 // Interface for Course and SET
 interface CourseAndSET {

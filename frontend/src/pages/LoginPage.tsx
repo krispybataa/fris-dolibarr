@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { 
   Box, 
-  Container, 
   Paper, 
   Typography, 
   TextField, 
   Button, 
-  Grid, 
   Divider,
   InputAdornment,
   IconButton,
   Alert
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import EmailIcon from '@mui/icons-material/Email';
@@ -19,13 +18,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import GoogleIcon from '@mui/icons-material/Google';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../theme';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -35,12 +28,12 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+    
     try {
       await login(email, password);
       navigate('/');
@@ -50,12 +43,12 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
-
+  
   const handleGoogleLogin = () => {
     // This would be implemented with Google OAuth
     alert('Google login not implemented in this demo');
   };
-
+  
   return (
     <Box
       sx={{
@@ -66,7 +59,7 @@ const LoginPage = () => {
     >
       <Grid container>
         {/* Left side - Logo */}
-        <Grid item xs={12} md={6} 
+        <Grid {...{ xs: 12, md: 6 }}
           sx={{ 
             display: 'flex', 
             flexDirection: 'column',
@@ -91,7 +84,7 @@ const LoginPage = () => {
         </Grid>
 
         {/* Right side - Login form */}
-        <Grid item xs={12} md={6} 
+        <Grid {...{ xs: 12, md: 6 }}
           sx={{ 
             bgcolor: FRIS_COLORS.burgundy,
             display: 'flex',

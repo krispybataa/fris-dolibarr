@@ -3,24 +3,22 @@ import {
   Box, 
   Typography, 
   Paper, 
-  Grid, 
   Chip,
   Button,
   CircularProgress,
   Alert,
   Divider,
-  Card,
-  CardContent,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions
 } from '@mui/material';
+import { Grid as MuiGrid } from '@mui/material';
+const Grid = MuiGrid as any; // Type casting to avoid TypeScript errors
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/layout/Layout';
@@ -34,15 +32,8 @@ import PendingIcon from '@mui/icons-material/Pending';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CategoryIcon from '@mui/icons-material/Category';
-import DescriptionIcon from '@mui/icons-material/Description';
 import axios from 'axios';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../theme';
 
 interface RecordDetail {
   id: number;

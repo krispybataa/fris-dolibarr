@@ -14,7 +14,8 @@ import {
   CardContent,
   IconButton
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Grid as MuiGrid } from '@mui/material';
+const Grid = MuiGrid as any; // Type casting to avoid TypeScript errors
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/layout/Layout';
 import EditIcon from '@mui/icons-material/Edit';
@@ -26,18 +27,20 @@ import InterestsIcon from '@mui/icons-material/Interests';
 import { profileAPI } from '../services/api';
 import { Formik, Form, FieldArray } from 'formik';
 import * as Yup from 'yup';
+import { FRIS_COLORS } from '../theme';
 
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
+// Additional colors for this component
+const PROFILE_COLORS = {
+  lightBurgundy: '#a84a66',
+  lightGreen: '#4c9d84',
+  lightGold: '#f7d88c'
 };
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+  style?: React.CSSProperties;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -52,7 +55,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: 3, width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
           {children}
         </Box>
       )}
@@ -160,7 +163,7 @@ const ProfilePage = () => {
     fetchProfileData();
   }, [token]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
@@ -184,7 +187,7 @@ const ProfilePage = () => {
   if (loading && !profileData) {
     return (
       <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <Box sx={{ display: 'block', textAlign: 'center', my: 4 }}>
           <CircularProgress />
         </Box>
       </Layout>
@@ -241,7 +244,11 @@ const ProfilePage = () => {
 
   return (
     <Layout>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ 
+        mb: 4, 
+        width: '100%',
+        maxWidth: '100%'
+      }}>
         <Typography variant="h4" component="h1" gutterBottom>
           My Profile
         </Typography>
@@ -269,29 +276,42 @@ const ProfilePage = () => {
         enableReinitialize
       >
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
-          <Form>
-            <Paper sx={{ mb: 4, overflow: 'hidden' }}>
-              <Box sx={{ p: 3, bgcolor: FRIS_COLORS.burgundy, color: 'white', display: 'flex', alignItems: 'center' }}>
-                <Avatar 
-                  sx={{ 
-                    width: 100, 
-                    height: 100, 
-                    mr: 3,
-                    border: '3px solid white'
-                  }}
-                />
-                <Box>
-                  <Typography variant="h5" fontWeight="bold">
-                    {values.userName}
-                  </Typography>
-                  <Typography variant="body1">
-                    {values.department}, {values.college}
-                  </Typography>
-                  <Typography variant="body2">
-                    {values.role}
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto' }}>
+          <Form style={{ width: '100%', maxWidth: '100%' }}>
+            <Paper sx={{ 
+              mb: 4, 
+              width: '100%', 
+              boxSizing: 'border-box',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
+                p: 3, 
+                bgcolor: FRIS_COLORS.burgundy, 
+                color: 'white', 
+                width: '100%'
+              }}>
+                <Box sx={{ display: 'table', width: '100%' }}>
+                  <Box sx={{ display: 'table-cell', verticalAlign: 'middle', width: '120px' }}>
+                    <Avatar 
+                      sx={{ 
+                        width: 100, 
+                        height: 100, 
+                        border: '3px solid white'
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'table-cell', verticalAlign: 'middle' }}>
+                    <Typography variant="h5" fontWeight="bold">
+                      {values.userName}
+                    </Typography>
+                    <Typography variant="body1">
+                      {values.department}, {values.college}
+                    </Typography>
+                    <Typography variant="body2">
+                      {values.role}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'right', width: '150px' }}>
                   {!editMode ? (
                     <Button 
                       variant="contained" 
@@ -340,15 +360,22 @@ const ProfilePage = () => {
                       </Button>
                     </Box>
                   )}
+                  </Box>
                 </Box>
               </Box>
 
-              <Box sx={{ p: 3 }}>
+              <Box sx={{ 
+                p: 3, 
+                width: '100%', 
+                boxSizing: 'border-box',
+                display: 'block'
+              }}>
                 <Typography variant="h6" gutterBottom>
                   Basic Information
                 </Typography>
-                <Grid container spacing={3}>
+                <Grid container spacing={3} sx={{ width: '100%' }}>
                   <Grid item xs={12} md={6}>
+                    {/* content */}
                     <TextField
                       fullWidth
                       label="Full Name"
@@ -404,33 +431,86 @@ const ProfilePage = () => {
               </Box>
             </Paper>
 
-            <Paper sx={{ mb: 4 }}>
-              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={tabValue} onChange={handleTabChange} aria-label="profile tabs">
+            <Paper 
+              elevation={2}
+              sx={{ 
+                mb: 4,
+                borderRadius: '12px',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                }
+              }}
+            >
+              <Box sx={{ 
+                borderBottom: 1, 
+                borderColor: 'divider'
+              }}>
+                <Tabs 
+                  value={tabValue} 
+                  onChange={handleTabChange} 
+                  aria-label="profile tabs"
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  allowScrollButtonsMobile
+                  sx={{
+                    '& .MuiTabs-indicator': {
+                      backgroundColor: '#8b1f41', // Original burgundy color
+                      height: 3
+                    },
+                    '& .MuiTab-root': {
+                      fontWeight: 'bold',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                      transition: 'all 0.2s ease',
+                      '&.Mui-selected': {
+                        color: '#8b1f41' // Original burgundy color
+                      },
+                      '&:hover': {
+                        color: '#a84a66', // Original lightBurgundy color
+                        backgroundColor: 'rgba(0,0,0,0.04)'
+                      }
+                    }
+                  }}
+                >
                   <Tab 
                     icon={<SchoolIcon />} 
                     label="Education" 
                     id="profile-tab-0" 
-                    aria-controls="profile-tabpanel-0" 
+                    aria-controls="profile-tabpanel-0"
+                    iconPosition="start"
                   />
                   <Tab 
                     icon={<InterestsIcon />} 
                     label="Research Interests" 
                     id="profile-tab-1" 
-                    aria-controls="profile-tabpanel-1" 
+                    aria-controls="profile-tabpanel-1"
+                    iconPosition="start"
                   />
                   <Tab 
                     icon={<WorkIcon />} 
                     label="Affiliations" 
                     id="profile-tab-2" 
-                    aria-controls="profile-tabpanel-2" 
+                    aria-controls="profile-tabpanel-2"
+                    iconPosition="start"
                   />
                 </Tabs>
               </Box>
 
-              <TabPanel value={tabValue} index={0}>
-                <Typography variant="h6" gutterBottom>
-                  Educational Background
+              <TabPanel value={tabValue} index={0} style={{ width: '100%', overflow: 'hidden' }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: FRIS_COLORS.burgundy,
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <SchoolIcon /> Educational Background
                 </Typography>
                 
                 <FieldArray name="degrees">
@@ -451,11 +531,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.degrees?.[index]?.degree && 
-                                    Boolean(errors.degrees?.[index]?.degree)
+                                    Boolean(errors.degrees?.[index] && typeof errors.degrees[index] !== 'string' && errors.degrees[index]?.degree)
                                   }
                                   helperText={
                                     touched.degrees?.[index]?.degree && 
-                                    errors.degrees?.[index]?.degree
+                                    (typeof errors.degrees?.[index] === 'object' ? errors.degrees[index]?.degree : undefined)
                                   }
                                   disabled={!editMode}
                                 />
@@ -470,11 +550,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.degrees?.[index]?.institution && 
-                                    Boolean(errors.degrees?.[index]?.institution)
+                                    Boolean(errors.degrees?.[index] && typeof errors.degrees[index] !== 'string' && errors.degrees[index]?.institution)
                                   }
                                   helperText={
                                     touched.degrees?.[index]?.institution && 
-                                    errors.degrees?.[index]?.institution
+                                    (typeof errors.degrees?.[index] === 'object' ? errors.degrees[index]?.institution : undefined)
                                   }
                                   disabled={!editMode}
                                 />
@@ -489,11 +569,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.degrees?.[index]?.year && 
-                                    Boolean(errors.degrees?.[index]?.year)
+                                    Boolean(errors.degrees?.[index] && typeof errors.degrees[index] !== 'string' && errors.degrees[index]?.year)
                                   }
                                   helperText={
                                     touched.degrees?.[index]?.year && 
-                                    errors.degrees?.[index]?.year
+                                    (typeof errors.degrees?.[index] === 'object' ? errors.degrees[index]?.year : undefined)
                                   }
                                   disabled={!editMode}
                                   type="number"
@@ -518,7 +598,16 @@ const ProfilePage = () => {
                         <Button
                           variant="outlined"
                           onClick={() => push({ degree: '', institution: '', year: new Date().getFullYear() })}
-                          sx={{ mt: 2 }}
+                          sx={{ 
+                            mt: 2,
+                            borderColor: FRIS_COLORS.burgundy,
+                            color: FRIS_COLORS.burgundy,
+                            '&:hover': {
+                              borderColor: PROFILE_COLORS.lightBurgundy,
+                              backgroundColor: 'rgba(139, 31, 65, 0.04)'
+                            }
+                          }}
+                          startIcon={<SchoolIcon />}
                         >
                           Add Education
                         </Button>
@@ -528,9 +617,20 @@ const ProfilePage = () => {
                 </FieldArray>
               </TabPanel>
 
-              <TabPanel value={tabValue} index={1}>
-                <Typography variant="h6" gutterBottom>
-                  Research Interests
+              <TabPanel value={tabValue} index={1} style={{ width: '100%', overflow: 'hidden' }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: FRIS_COLORS.burgundy,
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <InterestsIcon /> Research Interests
                 </Typography>
                 
                 <FieldArray name="researchInterests">
@@ -551,11 +651,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.researchInterests?.[index]?.interest && 
-                                    Boolean(errors.researchInterests?.[index]?.interest)
+                                    Boolean(errors.researchInterests?.[index] && typeof errors.researchInterests[index] !== 'string' && errors.researchInterests[index]?.interest)
                                   }
                                   helperText={
                                     touched.researchInterests?.[index]?.interest && 
-                                    errors.researchInterests?.[index]?.interest
+                                    (typeof errors.researchInterests?.[index] === 'object' ? errors.researchInterests[index]?.interest : undefined)
                                   }
                                   disabled={!editMode}
                                 />
@@ -579,7 +679,16 @@ const ProfilePage = () => {
                         <Button
                           variant="outlined"
                           onClick={() => push({ interest: '' })}
-                          sx={{ mt: 2 }}
+                          sx={{ 
+                            mt: 2,
+                            borderColor: FRIS_COLORS.burgundy,
+                            color: FRIS_COLORS.burgundy,
+                            '&:hover': {
+                              borderColor: PROFILE_COLORS.lightBurgundy,
+                              backgroundColor: 'rgba(139, 31, 65, 0.04)'
+                            }
+                          }}
+                          startIcon={<InterestsIcon />}
                         >
                           Add Research Interest
                         </Button>
@@ -589,9 +698,20 @@ const ProfilePage = () => {
                 </FieldArray>
               </TabPanel>
 
-              <TabPanel value={tabValue} index={2}>
-                <Typography variant="h6" gutterBottom>
-                  Professional Affiliations
+              <TabPanel value={tabValue} index={2} style={{ width: '100%', overflow: 'hidden' }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: FRIS_COLORS.burgundy,
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <WorkIcon /> Professional Affiliations
                 </Typography>
                 
                 <FieldArray name="affiliations">
@@ -612,11 +732,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.affiliations?.[index]?.organization && 
-                                    Boolean(errors.affiliations?.[index]?.organization)
+                                    Boolean(errors.affiliations?.[index] && typeof errors.affiliations[index] !== 'string' && errors.affiliations[index]?.organization)
                                   }
                                   helperText={
                                     touched.affiliations?.[index]?.organization && 
-                                    errors.affiliations?.[index]?.organization
+                                    (typeof errors.affiliations?.[index] === 'object' ? errors.affiliations[index]?.organization : undefined)
                                   }
                                   disabled={!editMode}
                                 />
@@ -631,11 +751,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.affiliations?.[index]?.position && 
-                                    Boolean(errors.affiliations?.[index]?.position)
+                                    Boolean(errors.affiliations?.[index] && typeof errors.affiliations[index] !== 'string' && errors.affiliations[index]?.position)
                                   }
                                   helperText={
                                     touched.affiliations?.[index]?.position && 
-                                    errors.affiliations?.[index]?.position
+                                    (typeof errors.affiliations?.[index] === 'object' ? errors.affiliations[index]?.position : undefined)
                                   }
                                   disabled={!editMode}
                                 />
@@ -650,11 +770,11 @@ const ProfilePage = () => {
                                   onBlur={handleBlur}
                                   error={
                                     touched.affiliations?.[index]?.yearJoined && 
-                                    Boolean(errors.affiliations?.[index]?.yearJoined)
+                                    Boolean(errors.affiliations?.[index] && typeof errors.affiliations[index] !== 'string' && errors.affiliations[index]?.yearJoined)
                                   }
                                   helperText={
                                     touched.affiliations?.[index]?.yearJoined && 
-                                    errors.affiliations?.[index]?.yearJoined
+                                    (typeof errors.affiliations?.[index] === 'object' ? errors.affiliations[index]?.yearJoined : undefined)
                                   }
                                   disabled={!editMode}
                                   type="number"
@@ -679,7 +799,16 @@ const ProfilePage = () => {
                         <Button
                           variant="outlined"
                           onClick={() => push({ organization: '', position: '', yearJoined: new Date().getFullYear() })}
-                          sx={{ mt: 2 }}
+                          sx={{ 
+                            mt: 2,
+                            borderColor: FRIS_COLORS.burgundy,
+                            color: FRIS_COLORS.burgundy,
+                            '&:hover': {
+                               borderColor: PROFILE_COLORS.lightBurgundy,
+                              backgroundColor: 'rgba(139, 31, 65, 0.04)'
+                            }
+                          }}
+                          startIcon={<WorkIcon />}
                         >
                           Add Affiliation
                         </Button>

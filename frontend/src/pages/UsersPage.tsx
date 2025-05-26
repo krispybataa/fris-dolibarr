@@ -33,13 +33,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { usersAPI } from '../services/api';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../theme';
 
 interface User {
   userId: number;

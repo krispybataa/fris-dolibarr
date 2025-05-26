@@ -2,13 +2,7 @@ import { useState } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SideMenu from './SideMenu';
-
-// FRIS logo colors: burgundy, green, and gold
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../../theme';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);

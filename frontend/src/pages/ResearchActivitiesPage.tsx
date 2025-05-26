@@ -25,13 +25,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ArticleIcon from '@mui/icons-material/Article';
 // Import APIs for research activities
 import { researchAPI } from '../services/api';
-
-// FRIS colors
-const FRIS_COLORS = {
-  burgundy: '#8b1f41',
-  green: '#006747',
-  gold: '#f2c75c'
-};
+import { FRIS_COLORS } from '../theme';
 
 // Interface for Research Activities
 interface ResearchActivity {
